@@ -6,6 +6,7 @@ const ROOT_DIR = '../'
 const TEST_DIR = 'tests/'
 const JAR_FILE = 'out/artifacts/MeeshQuest/meeshquest.jar'
 const ANT_BUILD_FILE = 'meeshquest.xml'
+const DIFF_CMD = 'colordiff' // or just the usual 'diff'
 /* END CONFIGURATION */
 
 const gulp = require('gulp')
@@ -18,7 +19,6 @@ const fs = require('fs')
 const cheerio = require('cheerio')
 const path = require('path')
 const argv = require('yargs').argv;
-const gulpif = require('gulp-if');
 
 const ACL = 'https://cmsc420.cs.umd.edu/meeshquest/part' + MEESHQUEST_PART + '/input/'
 const ACL_UPLOAD = ACL + 'upload_file/'
@@ -84,7 +84,7 @@ const writeCanonicalOutput = function(file) {
 						done.reject(err)
 					} else {
 						// Write the canonical output to a file.
-						fs.writeFile(OUTPUT_DEST + input, output, function(err) {
+						fs.writeFile(path.join(OUTPUT_DEST, input), output, function(err) {
 							if(err) {
                 console.error(err)
 								done.reject(err)
@@ -107,35 +107,18 @@ const writeCanonicalOutput = function(file) {
 
 gulp.task('build', shell.task('ant -quiet -f ' + path.resolve(ROOT_DIR, ANT_BUILD_FILE)))
 
-gulp.task('runall', ['build'], function () {
-  return gulp.src(INPUTS, {read: false})
-    .pipe(shell([
-      'echo <%= base(file.path) %>',
-      'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= output(file.path) %>'
-    ], {
-      templateData: {
-        base: function(file) {
-          return path.basename(file)
-        },
-        output: function (file) {
-          return MY_OUTPUT_DEST + path.basename(file)
-        }
-      }
-    }))
-})
-
-gulp.task('run', ['build'], function () {
+gulp.task('run', ['build', 'scrape'], function () {
   return gulp.src((argv.f == undefined ? INPUTS : argv.f), {read: false})
         .pipe(shell([
           'echo <%= base(file.path) %>',
-          'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= output(file.path) %>'
+          'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= myoutput(file.path) %>'
         ], {
           templateData: {
             base: function(file) {
               return path.basename(file)
             },
-            output: function (file) {
-              return MY_OUTPUT_DEST + path.basename(file)
+            myoutput: function (file) {
+              return path.join(MY_OUTPUT_DEST, path.basename(file))
             }
           }
         }))
@@ -149,4 +132,20 @@ gulp.task('scrape', function() {
 		.pipe(gulpFunction(writeCanonicalOutput, 'forEach'))
 		// Store which input files that have been scraped
 		.pipe(gulp.dest(INPUT_SCRAPED_DEST))
+})
+
+gulp.task('diff', ['run'], function() {
+	return gulp.src((argv.f == undefined ? MY_OUTPUT_DEST : argv.f), {read: false})
+    .pipe(shell([
+      'colordiff <%= output(file.path) %> <%= myoutput(file.path) %>'
+    ], {
+      templateData: {
+        myoutput: function (file) {
+          return path.join(MY_OUTPUT_DEST, path.basename(file))
+        },
+        output: function (file) {
+          return path.join(OUTPUT_DEST, path.basename(file))
+        }
+      }
+    }))
 })
