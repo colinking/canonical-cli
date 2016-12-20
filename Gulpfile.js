@@ -6,7 +6,7 @@ const ROOT_DIR = '../'
 const TEST_DIR = 'tests/'
 const JAR_FILE = 'out/artifacts/MeeshQuest/meeshquest.jar'
 const ANT_BUILD_FILE = 'meeshquest.xml'
-const DIFF_CMD = 'colordiff' // or just the usual 'diff'
+const DIFF_CMD = 'colordiff --ignore-all-space --report-identical-files' // or just the usual 'diff'
 /* END CONFIGURATION */
 
 const gulp = require('gulp')
@@ -109,7 +109,7 @@ const writeCanonicalOutput = function(file) {
 gulp.task('build', shell.task('ant -quiet -f ' + path.resolve(ROOT_DIR, ANT_BUILD_FILE)))
 
 gulp.task('run', ['build', 'scrape'], function () {
-  return gulp.src((argv.f == undefined ? INPUTS : path.join(INPUT_DEST, argv.f)), {read: false})
+  return gulp.src((argv.f == undefined ? INPUTS : path.join(INPUT_DEST, String(argv.f))), {read: false})
         .pipe(shell([
           'echo <%= base(file.path) %>',
           'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= myoutput(file.path) %>'
@@ -136,9 +136,9 @@ gulp.task('scrape', function() {
 })
 
 gulp.task('diff', ['run'], function() {
-	return gulp.src((argv.f == undefined ? MY_OUTPUT_DEST : path.join(MY_OUTPUT_DEST, argv.f)), {read: false})
+	return gulp.src((argv.f == undefined ? MY_OUTPUT_DEST : path.join(MY_OUTPUT_DEST, String(argv.f))), {read: false})
     .pipe(shell([
-      'colordiff --ignore-all-space <%= output(file.path) %> <%= myoutput(file.path) %>'
+      DIFF_CMD + ' <%= output(file.path) %> <%= myoutput(file.path) %>'
     ], {
       templateData: {
         myoutput: function (file) {
