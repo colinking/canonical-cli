@@ -16,7 +16,7 @@ var cheerio = require('cheerio')
 var path = require('path')
 
 const ACL = "https://cmsc420.cs.umd.edu/meeshquest/part" + PART + "/input/"
-const ACL_UPLOAD = path.join(ACL, 'upload_file/')
+const ACL_UPLOAD = ACL + 'upload_file/'
 const INPUTS = path.join(TEST_DIR, 'input/*.xml')
 const INPUT_SCRAPED_DEST = path.join(TEST_DIR, 'input-scraped/')
 const OUTPUT_DEST = path.join(TEST_DIR, 'output/')
@@ -67,17 +67,20 @@ const writeCanonicalOutput = function(file) {
 			}
 		}, function (err, resp, body) {
 			if (err) {
+        console.error(err);
 				done.reject(err);
 			} else {
 				// Get the URL of the results page and scrape the output from that page.
 				resultURL = resp.headers['location'];
 				scrapeOutput(resultURL, function(output, err) {
 					if (err) {
+            console.error(err);
 						done.reject(err);
 					} else {
 						// Write the canonical output to a file.
 						fs.writeFile(OUTPUT_DEST + input, output, function(err) {
 							if(err) {
+                console.error(err);
 								done.reject(err);
 							} else {
 								console.log("Scraped: " + input)
