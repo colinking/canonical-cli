@@ -22,7 +22,8 @@ const argv = require('yargs').argv;
 
 const ACL = 'https://cmsc420.cs.umd.edu/meeshquest/part' + MEESHQUEST_PART + '/input/'
 const ACL_UPLOAD = ACL + 'upload_file/'
-const INPUTS = path.resolve(ROOT_DIR, TEST_DIR, 'input/*.xml')
+const INPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'input')
+const INPUTS = path.resolve(INPUT_DEST, '*.xml')
 const INPUT_SCRAPED_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'input-scraped/')
 const OUTPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'output/')
 const MY_OUTPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'my-output/')
@@ -108,7 +109,7 @@ const writeCanonicalOutput = function(file) {
 gulp.task('build', shell.task('ant -quiet -f ' + path.resolve(ROOT_DIR, ANT_BUILD_FILE)))
 
 gulp.task('run', ['build', 'scrape'], function () {
-  return gulp.src((argv.f == undefined ? INPUTS : argv.f), {read: false})
+  return gulp.src((argv.f == undefined ? INPUTS : path.join(INPUT_DEST, argv.f)), {read: false})
         .pipe(shell([
           'echo <%= base(file.path) %>',
           'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= myoutput(file.path) %>'
@@ -135,9 +136,9 @@ gulp.task('scrape', function() {
 })
 
 gulp.task('diff', ['run'], function() {
-	return gulp.src((argv.f == undefined ? MY_OUTPUT_DEST : argv.f), {read: false})
+	return gulp.src((argv.f == undefined ? MY_OUTPUT_DEST : path.join(MY_OUTPUT_DEST, argv.f)), {read: false})
     .pipe(shell([
-      'colordiff <%= output(file.path) %> <%= myoutput(file.path) %>'
+      'colordiff --ignore-all-space <%= output(file.path) %> <%= myoutput(file.path) %>'
     ], {
       templateData: {
         myoutput: function (file) {
