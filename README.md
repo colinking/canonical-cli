@@ -3,6 +3,7 @@
 - Submits XML inputs to the [CMSC420 ACL](https://cmsc420.cs.umd.edu/meeshquest/part1/input/) and saves the output to your file system.
 - Build your project's JAR file from the command line.
 - Runs your project on input files from the command line.
+- Automatically diff your output with the canonical.
 
 # Installation
 
