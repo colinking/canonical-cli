@@ -1,6 +1,7 @@
 # canonical-cli
 
-- Submits XML inputs to the [CMSC420 ACL](https://cmsc420.cs.umd.edu/meeshquest/part1/input/) and saves the output to your file system.
+- Submit XML inputs to the [CMSC420 ACL](https://cmsc420.cs.umd.edu/meeshquest/part1/input/) and save the output to your file system.
+- Automatically diff your output with the canonical.
 - Build your project's JAR file from the command line.
 - Runs your project on input files from the command line.
 
@@ -59,6 +60,14 @@ Your directory should be structured roughly like so:
 
 # Usage
 
+### Canonical Diff
+Diffs your output with the canonical's output. This task will build your JAR, scrape any needed inputs from the canonical, run your project on the selected input and then produce a diff.
+
+```bash
+$ gulp diff
+$ gulp diff -f part2.public.pm3insert.input.xml
+```
+
 ### Scrape Outputs
 Runs all modified inputs and writes the canonical output to the output directory.
 
@@ -78,7 +87,7 @@ $ gulp build
 Generates the output by running your JAR file on inputs. Defaults to all inputs in the `tests/input` directory, but can run a specific file with the `-f` flag. Output is placed in `tests/my-output`.
 ```bash
 $ gulp run
-$ gulp run -f ./tests/input/part2.public.pm3insert.input.xml
+$ gulp run -f part2.public.pm3insert.input.xml
 ```
 
 # Configuration
@@ -86,10 +95,13 @@ $ gulp run -f ./tests/input/part2.public.pm3insert.input.xml
 Modify the configuration in `Gulpfile.js`.
 ```javascript
 /* CONFIGURATION */
-// Change this if you use a different location for your test inputs/outputs
-const TEST_DIR = '../tests/'
-// Change if you want to test a different part of the project
-const PART = 2
+const MEESHQUEST_PART = 2
+const ROOT_DIR = '../'
+// Relative to ROOT_DIR:
+const TEST_DIR = 'tests/'
+const JAR_FILE = 'out/artifacts/MeeshQuest/meeshquest.jar'
+const ANT_BUILD_FILE = 'meeshquest.xml'
+const DIFF_CMD = 'colordiff' // or just the usual 'diff'
 /* END CONFIGURATION */
 ```
 
