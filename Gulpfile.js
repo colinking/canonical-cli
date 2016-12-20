@@ -1,25 +1,31 @@
 
 /* CONFIGURATION */
-// Change this if you use a different location for your test inputs/outputs
-const TEST_DIR = '../tests/'
-// Change if you want to test a different part of the project
-const PART = 2
+const MEESHQUEST_PART = 2
+const ROOT_DIR = '../'
+// Relative to ROOT_DIR:
+const TEST_DIR = 'tests/'
+const JAR_FILE = 'out/artifacts/MeeshQuest/meeshquest.jar'
+const ANT_BUILD_FILE = 'meeshquest.xml'
 /* END CONFIGURATION */
 
 const gulp = require('gulp')
 const changed = require('gulp-changed')
+const shell = require('gulp-shell')
 const gulpFunction = require('gulp-function').default
-const q = require("q")
-var request = require('request')
-var fs = require('fs');
-var cheerio = require('cheerio')
-var path = require('path')
+const q = require('q')
+const request = require('request')
+const fs = require('fs')
+const cheerio = require('cheerio')
+const path = require('path')
+const argv = require('yargs').argv;
+const gulpif = require('gulp-if');
 
-const ACL = "https://cmsc420.cs.umd.edu/meeshquest/part" + PART + "/input/"
+const ACL = 'https://cmsc420.cs.umd.edu/meeshquest/part' + MEESHQUEST_PART + '/input/'
 const ACL_UPLOAD = ACL + 'upload_file/'
-const INPUTS = path.join(TEST_DIR, 'input/*.xml')
-const INPUT_SCRAPED_DEST = path.join(TEST_DIR, 'input-scraped/')
-const OUTPUT_DEST = path.join(TEST_DIR, 'output/')
+const INPUTS = path.resolve(ROOT_DIR, TEST_DIR, 'input/*.xml')
+const INPUT_SCRAPED_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'input-scraped/')
+const OUTPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'output/')
+const MY_OUTPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'my-output/')
 
 // Submits a GET request to the ACL to get a valid CSRF token.
 const getCSRF = function(cb) {
@@ -53,7 +59,7 @@ const writeCanonicalOutput = function(file) {
 	const done = q.defer()
 
 	input = file.relative
-	console.log("File changed: " + input)
+	console.log('File changed: ' + input)
 
 	getCSRF(function(token) {
 		// Configure the POST request with valid CSRF headers.
@@ -67,44 +73,80 @@ const writeCanonicalOutput = function(file) {
 			}
 		}, function (err, resp, body) {
 			if (err) {
-        console.error(err);
-				done.reject(err);
+        console.error(err)
+				done.reject(err)
 			} else {
 				// Get the URL of the results page and scrape the output from that page.
-				resultURL = resp.headers['location'];
+				resultURL = resp.headers['location']
 				scrapeOutput(resultURL, function(output, err) {
 					if (err) {
-            console.error(err);
-						done.reject(err);
+            console.error(err)
+						done.reject(err)
 					} else {
 						// Write the canonical output to a file.
 						fs.writeFile(OUTPUT_DEST + input, output, function(err) {
 							if(err) {
-                console.error(err);
-								done.reject(err);
+                console.error(err)
+								done.reject(err)
 							} else {
-								console.log("Scraped: " + input)
+								console.log('Scraped: ' + input)
 								done.resolve()
 							}
-						});
+						})
 					}
 				})
 			}
-		});
-		var form = req.form();
+		})
+		var form = req.form()
 		form.append('rawfile', fs.createReadStream(file.path))
 		form.append('csrfmiddlewaretoken', token)
-	});
+	})
 
 	return done.promise
 }
 
-gulp.task('default', function() {
+gulp.task('build', shell.task('ant -quiet -f ' + path.resolve(ROOT_DIR, ANT_BUILD_FILE)))
+
+gulp.task('runall', ['build'], function () {
+  return gulp.src(INPUTS, {read: false})
+    .pipe(shell([
+      'echo <%= base(file.path) %>',
+      'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= output(file.path) %>'
+    ], {
+      templateData: {
+        base: function(file) {
+          return path.basename(file)
+        },
+        output: function (file) {
+          return MY_OUTPUT_DEST + path.basename(file)
+        }
+      }
+    }))
+})
+
+gulp.task('run', ['build'], function () {
+  return gulp.src((argv.f == undefined ? INPUTS : argv.f), {read: false})
+        .pipe(shell([
+          'echo <%= base(file.path) %>',
+          'cd ' + ROOT_DIR + ' && java -jar ' + JAR_FILE + ' < <%= file.path %> > <%= output(file.path) %>'
+        ], {
+          templateData: {
+            base: function(file) {
+              return path.basename(file)
+            },
+            output: function (file) {
+              return MY_OUTPUT_DEST + path.basename(file)
+            }
+          }
+        }))
+})
+
+gulp.task('scrape', function() {
 	return gulp.src(INPUTS)
 		// Get only the changed files
 		.pipe(changed(INPUT_SCRAPED_DEST))
 		// Pass to the ACL scraper
 		.pipe(gulpFunction(writeCanonicalOutput, 'forEach'))
 		// Store which input files that have been scraped
-		.pipe(gulp.dest(INPUT_SCRAPED_DEST));
-});
+		.pipe(gulp.dest(INPUT_SCRAPED_DEST))
+})

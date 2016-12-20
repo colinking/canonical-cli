@@ -1,23 +1,26 @@
 {
-  "name": "canonical-cli",
-	"description": "Submits XML inputs to the CMSC420 ACL and saves the output to your file system.",
-  "version": "1.0.0",
-	"author": "Colin King <colink@umd.edu>",
-  "license": "MIT",
-	"scripts": {
-		"run": "gulp"
-	},
-  "dependencies": {
-    "cheerio": "^0.22.0",
-    "gulp": "^3.9.1",
-    "gulp-changed": "^1.3.2",
-    "gulp-function": "^2.2.0",
-    "q": "^1.4.1",
-    "request": "^2.76.0"
-  },
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/colinking/canonical-cli"
-	},
-	"private": true
+ "name": "canonical-cli",
+ "description": "Submits XML inputs to the CMSC420 ACL and saves the output to your file system.",
+ "version": "1.0.0",
+ "author": "Colin King <colink@umd.edu>",
+ "license": "MIT",
+ "scripts": {
+  "run": "gulp"
+ },
+ "dependencies": {
+  "cheerio": "^0.22.0",
+  "gulp": "^3.9.1",
+  "gulp-changed": "^1.3.2",
+  "gulp-function": "^2.2.0",
+  "gulp-if": "^2.0.2",
+  "gulp-shell": "^0.5.2",
+  "q": "^1.4.1",
+  "request": "^2.76.0",
+  "yargs": "^6.5.0"
+ },
+ "repository": {
+  "type": "git",
+  "url": "https://github.com/colinking/canonical-cli"
+ },
+ "private": true
 }
