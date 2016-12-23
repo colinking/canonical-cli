@@ -12,6 +12,7 @@ const DIFF_CMD = 'colordiff --ignore-all-space --report-identical-files' // or j
 const gulp = require('gulp')
 const changed = require('gulp-changed')
 const shell = require('gulp-shell')
+const gulpif = require('gulp-if')
 const gulpFunction = require('gulp-function').default
 const q = require('q')
 const request = require('request')
@@ -23,7 +24,7 @@ const argv = require('yargs').argv;
 const ACL = 'https://cmsc420.cs.umd.edu/meeshquest/part' + MEESHQUEST_PART + '/input/'
 const ACL_UPLOAD = ACL + 'upload_file/'
 const INPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'input')
-const INPUTS = path.resolve(INPUT_DEST, '*.xml')
+const INPUTS = path.resolve(INPUT_DEST, '*')
 const INPUT_SCRAPED_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'input-scraped/')
 const OUTPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'output/')
 const MY_OUTPUT_DEST = path.resolve(ROOT_DIR, TEST_DIR, 'my-output/')
@@ -126,9 +127,9 @@ gulp.task('run', ['build', 'scrape'], function () {
 })
 
 gulp.task('scrape', function() {
-	return gulp.src(INPUTS)
-		// Get only the changed files
-		.pipe(changed(INPUT_SCRAPED_DEST))
+	return gulp.src((argv.f == undefined ? INPUTS : path.join(INPUT_DEST, String(argv.f))))
+		// Get only the changed files unless a specific file is specified
+		.pipe(gulpif(argv.f == undefined, changed(INPUT_SCRAPED_DEST)))
 		// Pass to the ACL scraper
 		.pipe(gulpFunction(writeCanonicalOutput, 'forEach'))
 		// Store which input files that have been scraped
