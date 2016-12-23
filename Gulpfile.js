@@ -1,6 +1,6 @@
 
 /* CONFIGURATION */
-const MEESHQUEST_PART = 2
+const MEESHQUEST_PART = 3
 const ROOT_DIR = '../'
 // Relative to ROOT_DIR:
 const TEST_DIR = 'tests/'

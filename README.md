@@ -95,7 +95,7 @@ $ gulp run -f part2.public.pm3insert.input.xml
 Modify the configuration in `Gulpfile.js`.
 ```javascript
 /* CONFIGURATION */
-const MEESHQUEST_PART = 2
+const MEESHQUEST_PART = 1
 const ROOT_DIR = '../'
 // Relative to ROOT_DIR:
 const TEST_DIR = 'tests/'
