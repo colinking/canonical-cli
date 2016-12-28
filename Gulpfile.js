@@ -129,7 +129,7 @@ gulp.task('run', ['build', 'scrape'], function () {
 gulp.task('scrape', function() {
 	return gulp.src((argv.f == undefined ? INPUTS : path.join(INPUT_DEST, String(argv.f))))
 		// Get only the changed files unless a specific file is specified
-		.pipe(gulpif(argv.f == undefined, changed(INPUT_SCRAPED_DEST)))
+		.pipe(gulpif(argv.force === undefined, changed(INPUT_SCRAPED_DEST)))
 		// Pass to the ACL scraper
 		.pipe(gulpFunction(writeCanonicalOutput, 'forEach'))
 		// Store which input files that have been scraped
