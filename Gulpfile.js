@@ -77,6 +77,10 @@ const writeCanonicalOutput = function(file) {
 			if (err) {
         console.error(err)
 				done.reject(err)
+			} else if (resp.headers['location'] == undefined) {
+				err = new Error("Upload of input file failed. Your XML may not be valid.")
+				console.error(err)
+				done.reject(err)
 			} else {
 				// Get the URL of the results page and scrape the output from that page.
 				resultURL = resp.headers['location']
