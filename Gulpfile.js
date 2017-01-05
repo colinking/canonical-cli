@@ -6,7 +6,7 @@ const ROOT_DIR = '../'
 const TEST_DIR = 'tests/'
 const JAR_FILE = 'out/artifacts/MeeshQuest/meeshquest.jar'
 const ANT_BUILD_FILE = 'meeshquest.xml'
-const DIFF_CMD = 'colordiff --ignore-all-space --report-identical-files' // or just the usual 'diff'
+const DIFF_CMD = 'icdiff -U50 --cols=200' // or just the usual 'diff'
 /* END CONFIGURATION */
 
 const gulp = require('gulp')
